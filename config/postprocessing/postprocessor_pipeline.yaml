@@ -1,0 +1,18 @@
+elevation_mapping:
+  ros__parameters:
+    # ----------------------------- Postprocessing worker/publisher -----------------------------
+    # 后处理线程数（每帧 raw map 的滤波任务并行度）
+    postprocessor_num_threads: 1
+    # filters 参数命名空间名称（需在同一参数树下定义该链）
+    postprocessor_pipeline_name: postprocessor_pipeline
+    # 后处理后 raw elevation map 发布话题
+    output_topic: elevation_map_raw
+
+    # ----------------------------- Example filter chain -----------------------------
+    # 下面是示例模板。若未提供实际链配置，程序会告警并直接发布未后处理的 raw map。
+    # postprocessor_pipeline:
+    #   - name: inplace
+    #     type: gridMapFilters/InpaintFilter
+    #     params:
+    #       input_layer: elevation
+    #       output_layer: elevation

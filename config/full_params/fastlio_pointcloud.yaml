@@ -1,0 +1,107 @@
+# FAST-LIO 里程计/SLAM + 配准点云 — elevation_mapping_ros2 参数示例
+#
+# 约定（请按你实际 FAST-LIO 的 frame 在 RViz/tf_echo 核对后修改）：
+#   - map_frame_id        与 FAST-LIO 世界系一致，常见为 camera_init
+#   - robot_base_frame_id 与 IMU/机体一致，常见为 body
+#   - point_cloud_topic   常见为 FAST-LIO 发布的 /cloud_registered（已在 world 系）
+#     若只用 Livox 原始话题，改为 /livox/lidar 等，并保证 TF 链完整
+#
+# 位姿话题：
+#   本节点使用 geometry_msgs/PoseWithCovarianceStamped；FAST-LIO 通常发 nav_msgs/Odometry。
+#   下面将 robot_pose_with_covariance_topic 置空：不订阅位姿，关闭运动方差预测（仅依赖 TF 建图）。
+#   若需完整运动模型，请用独立节点把 Odometry 转为 PoseWithCovarianceStamped，再填写对应话题名。
+#
+# 启动示例：
+#   ros2 run elevation_mapping_ros2 elevation_mapping_ros2_node --ros-args \
+#     --params-file $(ros2 pkg prefix elevation_mapping_ros2)/share/elevation_mapping_ros2/config/fastlio/fastlio_pointcloud.yaml
+
+elevation_mapping:
+  ros__parameters:
+    # ----------------------------- Core frames / topics -----------------------------
+    map_frame_id: camera_init
+    robot_base_frame_id: body
+    track_point_frame_id: body
+    track_point_x: 0.0
+    track_point_y: 0.0
+    track_point_z: 0.0
+
+    # 单路兼容模式（不使用 input_sources_file 时生效）
+    point_cloud_topic: /cloud_registered
+
+    # FAST-LIO 通常输出 Odometry；这里先置空，禁用运动方差预测（仅用 TF）
+    # 若你有 PoseWithCovarianceStamped，填入该话题即可启用预测
+    robot_pose_with_covariance_topic: ""
+    robot_pose_cache_size: 200
+
+    # ----------------------------- Timers / rates -----------------------------
+    min_update_rate: 2.0
+    time_tolerance: 0.05
+    fused_map_publishing_rate: 1.0
+    visibility_cleanup_rate: 1.0
+    num_callback_threads: 4
+
+    # ----------------------------- 高程栅格采样点云（机器人基座系） -----------------------------
+    elevation_sampling:
+      enable: false
+      publish_rate: 2.0
+      topic: elevation_sampled_cloud
+      stride_x: 2
+      stride_y: 2
+      use_fused_map: true
+      layer_name: elevation
+
+    # ----------------------------- Map geometry -----------------------------
+    resolution: 0.05
+    length_in_x: 8.0
+    length_in_y: 8.0
+    position_x: 0.0
+    position_y: 0.0
+
+    # ----------------------------- Mapping model -----------------------------
+    min_variance: 0.000009
+    max_variance: 0.0009
+    mahalanobis_distance_threshold: 2.5
+    multi_height_noise: 0.000009
+    min_horizontal_variance: 0.000625
+    max_horizontal_variance: 0.5
+    scanning_duration: 1.0
+    increase_height_alpha: 0.0
+    underlying_map_topic: ""
+    enable_visibility_cleanup: true
+    enable_continuous_cleanup: false
+    masked_replace_service_mask_layer_name: mask
+
+    # ----------------------------- Initialization -----------------------------
+    initialize_elevation_map: false
+    initialization_method: 0
+    length_in_x_init_submap: 1.2
+    length_in_y_init_submap: 1.8
+    init_submap_height_offset: 0.0
+    init_submap_variance: 0.01
+    target_frame_init_submap: footprint
+
+    # ----------------------------- Sensor processor -----------------------------
+    sensor_processor:
+      type: laser
+      # 通用预处理参数（SensorProcessorBase）
+      ignore_points_above: 1.0e9
+      ignore_points_below: -1.0e9
+      apply_voxelgrid_filter: false
+      voxelgrid_filter_size: 0.0
+      # LaserSensorProcessor 参数
+      min_radius: 0.01
+      beam_angle: 0.0004
+      beam_constant: 0.0015
+
+    # ----------------------------- Motion update -----------------------------
+    robot_motion_map_update:
+      covariance_scale: 1.0
+
+    # ----------------------------- Postprocessing -----------------------------
+    postprocessor_num_threads: 1
+    postprocessor_pipeline_name: postprocessor_pipeline
+    output_topic: elevation_map_raw
+
+    # ----------------------------- Optional multi-input mode -----------------------------
+    # 若你改用 input_sources_file（推荐多路输入），可在此设置文件路径并忽略 point_cloud_topic：
+    # input_sources_file: /absolute/path/to/input_sources.yaml

@@ -1,0 +1,23 @@
+elevation_mapping:
+  ros__parameters:
+    sensor_processor:
+      # 处理器类型：laser / stereo / structured_light / perfect
+      type: laser
+
+      # ----------------------------- Base processor options -----------------------------
+      # 高于该阈值的点会被忽略（单位 m，参考 map frame）
+      ignore_points_above: 1.0e9
+      # 低于该阈值的点会被忽略（单位 m，参考 map frame）
+      ignore_points_below: -1.0e9
+      # 是否启用体素滤波降采样
+      apply_voxelgrid_filter: false
+      # 体素大小（m），仅在启用体素滤波时生效
+      voxelgrid_filter_size: 0.0
+
+      # ----------------------------- Laser sensor model -----------------------------
+      # 激光束主方向最小标准差项（m）
+      min_radius: 0.01
+      # 束发散角系数（随距离线性增大）
+      beam_angle: 0.0004
+      # 束宽常量项
+      beam_constant: 0.0015

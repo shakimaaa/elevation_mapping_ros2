@@ -1,0 +1,48 @@
+<?xml version="1.0"?>
+<?xml-model href="http://download.ros.org/schema/package_format3.xsd" schematypens="http://www.w3.org/2001/XMLSchema"?>
+
+<package format="3">
+  <name>elevation_mapping_ros2</name>
+  <version>0.0.1</version>
+  <description>
+    基于机器人位姿与距离测量的机器人中心高程地图（ROS 2 移植工作区）。
+    原版为 Catkin 包 elevation_mapping；本包为 ament 构建下的重构与增量迁移目标。
+  </description>
+  <maintainer email="zbohao7@gmail.com">Beauhowe Zhang</maintainer>
+  <license>Apache-2.0</license>
+
+  <!-- 构建系统：ament_cmake（对应 colcon build） -->
+  <buildtool_depend>ament_cmake</buildtool_depend>
+
+  <depend>rclcpp</depend>
+  <depend>geometry_msgs</depend>
+  <depend>sensor_msgs</depend>
+  <depend>std_msgs</depend>
+  <depend>std_srvs</depend>
+  <depend>tf2</depend>
+  <depend>tf2_ros</depend>
+  <depend>tf2_eigen</depend>
+  <depend>tf2_geometry_msgs</depend>
+  <depend>message_filters</depend>
+  <depend>grid_map_core</depend>
+  <depend>grid_map_ros</depend>
+  <depend>grid_map_msgs</depend>
+  <depend>pcl_conversions</depend>
+  <depend>libpcl-dev</depend>
+  <depend>kindr</depend>
+  <depend>yaml_cpp_vendor</depend>
+  <depend>boost</depend>
+  <depend>filters</depend>
+  <depend>pluginlib</depend>
+  <exec_depend>launch</exec_depend>
+  <exec_depend>launch_ros</exec_depend>
+  <exec_depend>ament_index_python</exec_depend>
+
+  <test_depend>ament_lint_auto</test_depend>
+  <test_depend>ament_lint_common</test_depend>
+
+  <export>
+    <build_type>ament_cmake</build_type>
+  </export>
+</package>
+

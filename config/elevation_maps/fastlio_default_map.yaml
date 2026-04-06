@@ -1,0 +1,64 @@
+elevation_mapping:
+  ros__parameters:
+    # ----------------------------- Update / fusion rates -----------------------------
+    # 无新点云时保底更新频率（Hz），内部使用 1/min_update_rate 作为超时阈值
+    min_update_rate: 2.0
+    # 位姿与点云时间对齐容差（s）
+    time_tolerance: 0.05
+    # 融合图周期发布频率（Hz）；0=不启用定时发布，inf=点云回调中连续融合
+    fused_map_publishing_rate: 1.0
+    # 可见性清理频率（Hz）
+    visibility_cleanup_rate: 1.0
+
+    # ----------------------------- Geometry -----------------------------
+    # 栅格分辨率（m/格）
+    resolution: 0.05
+    # 地图窗口尺寸（m）
+    length_in_x: 8.0
+    length_in_y: 8.0
+    # 初始地图中心位置（map frame）
+    position_x: 0.0
+    position_y: 0.0
+
+    # ----------------------------- Elevation model -----------------------------
+    # 高度方差上下限
+    min_variance: 0.000009
+    max_variance: 0.0009
+    # 马氏距离阈值（多高度/异常判定）
+    mahalanobis_distance_threshold: 2.5
+    # 多高度场景附加噪声
+    multi_height_noise: 0.000009
+    # 水平方差上下限
+    min_horizontal_variance: 0.000625
+    max_horizontal_variance: 0.5
+    # 同一扫描时间窗（s），影响多高度融合与清理
+    scanning_duration: 1.0
+    # 同一扫描内遇到更高点时的平滑系数（0=快速跟随）
+    increase_height_alpha: 0.0
+    # 可选底图输入话题（留空=禁用）
+    underlying_map_topic: ""
+    # 是否启用可见性清理
+    enable_visibility_cleanup: true
+    # 是否在点云回调内连续清理（true 时更实时但更耗算力）
+    enable_continuous_cleanup: false
+    # masked_replace 服务使用的掩码层名
+    masked_replace_service_mask_layer_name: mask
+
+    # ----------------------------- Optional initialization -----------------------------
+    # 启动时是否执行初始子图高度填充
+    initialize_elevation_map: false
+    # 初始化方法（当前实现主要为平面初始化）
+    initialization_method: 0
+    # 初始化子图尺寸（m）
+    length_in_x_init_submap: 1.2
+    length_in_y_init_submap: 1.8
+    # 初始化高度偏移与初始方差
+    init_submap_height_offset: 0.0
+    init_submap_variance: 0.01
+    # 初始化参考 frame（通常 footprint/base_link）
+    target_frame_init_submap: footprint
+
+    # ----------------------------- Motion update -----------------------------
+    # 位姿协方差缩放系数（>1 更保守，<1 更激进）
+    robot_motion_map_update:
+      covariance_scale: 1.0
