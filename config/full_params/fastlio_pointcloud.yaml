@@ -45,10 +45,18 @@ elevation_mapping:
       enable: false
       publish_rate: 2.0
       topic: elevation_sampled_cloud
-      stride_x: 2
-      stride_y: 2
       use_fused_map: true
       layer_name: elevation
+      invalid_height_fill_mode: none
+      invalid_height_body_offset: -0.1979
+      rotate_output_with_robot_attitude: true
+      publish_index_markers: false
+      marker_topic: elevation_sampled_cloud_indices
+      marker_scale: 0.06
+      lateral_samples: 16
+      longitudinal_samples: 26
+      lateral_length: 1.5
+      longitudinal_length: 2.5
 
     # ----------------------------- Map geometry -----------------------------
     resolution: 0.05

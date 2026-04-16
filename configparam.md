@@ -32,15 +32,36 @@
 
 #### 高程栅格采样点云 `elevation_sampling`（可选）
 
-节点在 `elevation_mapping_node.cpp` 中构造 `ElevationMapRobotFrameSampler`：按地图 `resolution` 对应的栅格索引步长下采样，将每个有效格子的 **地图系 3D 中心**（由 `grid_map::GridMap::getPosition3` 得到，z 为指定层高程）变换到 **`robot_base_frame_id` 局部系** 后发布 `sensor_msgs/PointCloud2`（`frame_id` 为机器人基座系），因此水平分量随机器人旋转而变化。
+节点在 `elevation_mapping_node.cpp` 中构造 `ElevationMapRobotFrameSampler`：先按机器人周围局部矩形规则在 **map 系** 高程图上确定采样位置，再读取对应格子的 **地图系 3D 中心**（由 `grid_map::GridMap::getPosition3` 得到，z 为指定层高程），最后整体变换到 **`robot_base_frame_id` 局部系** 后发布 `sensor_msgs/PointCloud2`（`frame_id` 为机器人基座系），因此发布点云的 `x/y/z` 全部处于机器人局部系。
 
 - `elevation_sampling.enable`：是否启用（默认 `false`）。
 - `elevation_sampling.publish_rate`：发布频率（Hz）。
 - `elevation_sampling.topic`：点云话题名。
-- `elevation_sampling.stride_x` / `stride_y`：沿栅格两个维度每隔多少个格子采一个点（`1` 为全格；`2` 为隔一格，即约每隔 `2*resolution` 米）。  
-  点云中的**点顺序**（与 `size(0)`=行、`size(1)`=列 一致）：**最右列、最下行**为第 0 个点，沿该列自下而上为 1、2、…，再左移一列重复。
+- `elevation_sampling.lateral_samples`：横向采样点数，例如 `16`。
+- `elevation_sampling.longitudinal_samples`：纵向采样点数，例如 `26`。
+- `elevation_sampling.lateral_length`：横向采样矩形宽度（m）。
+- `elevation_sampling.longitudinal_length`：纵向采样矩形长度（m）。
+  点云中的**点顺序**：`right-back` 为第 0 个点；同一列内从后往前，再从右向左切换到下一列。  
+  例如 `lateral_samples=16`、`longitudinal_samples=26` 且 `lateral_length=1.5`、`longitudinal_length=2.5` 时，横纵两个方向的采样间距都为 `0.1 m`。
+- `elevation_sampling.rotate_output_with_robot_attitude`：是否让输出点云完整跟随机器人姿态变化。  
+  - `true`：输出点的 `x/y/z` 都会随 yaw / roll / pitch 改变。  
+  - `false`：输出点保持在固定的 body 局部规则网格上，仅高度 `z` 随地图与姿态变化。
+- `elevation_sampling.invalid_height_fill_mode`：当高程图该采样点没有有效高度时的补值策略。  
+  - `none`：不补值，直接跳过该点。  
+  - `last_valid`：使用当前点序中的上一个有效点高度。  
+  - `body`：使用 `map` 系 `z=0` 的点变换到 `robot_base_frame_id` 后的高度补值；该高度通常表示 body 相对地面的高度，在局部系中常为负值，符号会与其它正常采样点保持一致。
+- `elevation_sampling.invalid_height_body_offset`：仅在 `invalid_height_fill_mode=body` 时生效，在 body-to-ground 高度基础上追加的额外偏移量。  
+  - 例如 `-0.1979` 表示在原有 body 补值高度基础上再减 `0.2 m`。
 - `elevation_sampling.use_fused_map`：`true` 用融合图，`false` 用原始图。
 - `elevation_sampling.layer_name`：高度图层名，一般为 `elevation`。
+- `elevation_sampling.publish_index_markers`：是否额外发布采样点序号 `MarkerArray`。
+- `elevation_sampling.marker_topic`：采样点序号 marker 的话题名。
+- `elevation_sampling.marker_scale`：文字 marker 的显示尺度。
+
+补充说明：
+
+- 这里的 `0.1 m` 指的是**机器人局部平面采样分辨率**，也就是采样网格在局部系中的 `x/y` 间距；并不表示最终三维点之间的欧氏距离恒为 `0.1 m`。
+- 采样位置始终先在机器人局部系中定义，再映射到 `map` 系查询高度，因此局部规则网格和点序在两种输出模式下都保持一致。
 
 需保证 TF 中存在 `map_frame_id` → `robot_base_frame_id` 的变换（与建图一致）。
 

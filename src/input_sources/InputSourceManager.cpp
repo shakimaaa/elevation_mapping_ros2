@@ -70,10 +70,10 @@ bool InputSourceManager::configure(const YAML::Node& config, const std::string& 
   return successfulConfiguration;
 }
 
-void InputSourceManager::registerWith(ElevationMapping& map) {
+void InputSourceManager::registerWith(ElevationMapping& map, const rclcpp::CallbackGroup::SharedPtr& callback_group) {
   for (Input& source : sources_) {
     if (source.getType() == "pointcloud") {
-      source.registerCallback<sensor_msgs::msg::PointCloud2>(map, &ElevationMapping::pointCloudCallback);
+      source.registerCallback<sensor_msgs::msg::PointCloud2>(map, &ElevationMapping::pointCloudCallback, callback_group);
     } else {
       RCLCPP_WARN(node_->get_logger(), "Unsupported input type '%s' (only 'pointcloud').", source.getType().c_str());
     }

@@ -147,6 +147,7 @@ class ElevationMapping {
   InputSourceManager inputSources_;
   /** 兼容模式：未配置 `input_sources_file` 时单独订阅 `point_cloud_topic`。 */
   rclcpp::Subscription<sensor_msgs::msg::PointCloud2>::SharedPtr point_cloud_subscriber_{nullptr};
+  rclcpp::CallbackGroup::SharedPtr point_cloud_callback_group_;
 
   rclcpp::Service<std_srvs::srv::Empty>::SharedPtr fusion_trigger_service_;
   rclcpp::Service<grid_map_msgs::srv::GetGridMap>::SharedPtr fused_submap_service_;

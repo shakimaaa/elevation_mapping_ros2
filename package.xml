@@ -3,7 +3,7 @@
 
 <package format="3">
   <name>elevation_mapping_ros2</name>
-  <version>0.0.1</version>
+  <version>0.0.2</version>
   <description>
     基于机器人位姿与距离测量的机器人中心高程地图（ROS 2 移植工作区）。
     原版为 Catkin 包 elevation_mapping；本包为 ament 构建下的重构与增量迁移目标。
@@ -17,6 +17,7 @@
   <depend>rclcpp</depend>
   <depend>geometry_msgs</depend>
   <depend>sensor_msgs</depend>
+  <depend>visualization_msgs</depend>
   <depend>std_msgs</depend>
   <depend>std_srvs</depend>
   <depend>tf2</depend>
@@ -37,6 +38,7 @@
   <exec_depend>launch</exec_depend>
   <exec_depend>launch_ros</exec_depend>
   <exec_depend>ament_index_python</exec_depend>
+  <exec_depend>rclpy</exec_depend>
 
   <test_depend>ament_lint_auto</test_depend>
   <test_depend>ament_lint_common</test_depend>

@@ -44,7 +44,8 @@ class Input {
 
   /** @brief 创建订阅并将消息转发到 `ElevationMapping` 的指定成员回调。 */
   template <typename MsgT>
-  void registerCallback(ElevationMapping& map, CallbackT<MsgT> callback);
+  void registerCallback(ElevationMapping& map, CallbackT<MsgT> callback,
+                        const rclcpp::CallbackGroup::SharedPtr& callback_group = nullptr);
 
   /** @brief 返回实际订阅话题（绝对路径或带命名空间解析）。 */
   std::string getSubscribedTopic() const;
@@ -75,15 +76,19 @@ class Input {
 };
 
 template <typename MsgT>
-void Input::registerCallback(ElevationMapping& map, CallbackT<MsgT> callback) {
+void Input::registerCallback(ElevationMapping& map, CallbackT<MsgT> callback,
+                             const rclcpp::CallbackGroup::SharedPtr& callback_group) {
   static_assert(std::is_same_v<MsgT, sensor_msgs::msg::PointCloud2>, "Only sensor_msgs::msg::PointCloud2 is supported.");
   const Parameters parameters{parameters_.getData()};
   const size_t depth = std::max<size_t>(1U, parameters.queueSize_);
   auto qos = rclcpp::QoS(rclcpp::KeepLast(depth));
+  rclcpp::SubscriptionOptions options;
+  options.callback_group = callback_group;
   subscriber_ = node_->create_subscription<sensor_msgs::msg::PointCloud2>(
       parameters.topic_, qos,
       [this, &map, callback, publishOnUpdate = parameters.publishOnUpdate_](
-          sensor_msgs::msg::PointCloud2::ConstSharedPtr msg) { (map.*callback)(msg, publishOnUpdate, sensorProcessor_); });
+          sensor_msgs::msg::PointCloud2::ConstSharedPtr msg) { (map.*callback)(msg, publishOnUpdate, sensorProcessor_); },
+      options);
   RCLCPP_INFO(node_->get_logger(), "Subscribing %s: %s queue=%u", parameters.type_.c_str(), parameters.topic_.c_str(),
               parameters.queueSize_);
 }

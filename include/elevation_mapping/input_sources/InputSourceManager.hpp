@@ -34,7 +34,7 @@ class InputSourceManager {
   bool configure(const YAML::Node& config, const std::string& sourceConfigurationName);
 
   /** @brief 对已成功配置的每路 `Input` 调用 `registerCallback`（当前仅支持 type==`pointcloud`）。 */
-  void registerWith(ElevationMapping& map);
+  void registerWith(ElevationMapping& map, const rclcpp::CallbackGroup::SharedPtr& callback_group = nullptr);
 
   int getNumberOfSources();
 

@@ -185,18 +185,21 @@ bool ElevationMapping::readParameters(bool reload) {
 /** 多路 YAML 优先；否则若仍存在 point_cloud_topic 则单订阅；另建位姿 Cache 供时间同步。 */
 void ElevationMapping::setupSubscribers() {
   auto [parameters, parameterGuard] = parameters_.getDataToWrite();
+  point_cloud_callback_group_ = node_->create_callback_group(rclcpp::CallbackGroupType::MutuallyExclusive);
   const bool configured_input_sources = inputSources_.configureFromRos();
   const bool has_deprecated_pc = node_->has_parameter("point_cloud_topic");
   if (has_deprecated_pc) {
     RCLCPP_WARN(node_->get_logger(), "point_cloud_topic is deprecated; use input_sources_file + YAML.");
   }
   if (!configured_input_sources && has_deprecated_pc) {
+    rclcpp::SubscriptionOptions options;
+    options.callback_group = point_cloud_callback_group_;
     point_cloud_subscriber_ = node_->create_subscription<sensor_msgs::msg::PointCloud2>(
         parameters.pointCloudTopic_, rclcpp::SensorDataQoS(),
-        [this](sensor_msgs::msg::PointCloud2::ConstSharedPtr msg) { pointCloudCallback(msg, true, sensor_processor_); });
+        [this](sensor_msgs::msg::PointCloud2::ConstSharedPtr msg) { pointCloudCallback(msg, true, sensor_processor_); }, options);
   }
   if (configured_input_sources) {
-    inputSources_.registerWith(*this);
+    inputSources_.registerWith(*this, point_cloud_callback_group_);
   }
 
   if (!parameters.robotPoseTopic_.empty()) {

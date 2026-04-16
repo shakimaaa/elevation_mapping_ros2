@@ -28,10 +28,17 @@ elevation_mapping:
     # ----------------------------- 高程栅格采样点云（机器人系） -----------------------------
     # 按 stride_x/y 个格子步长下采样；z 为图层高程，xy 经 TF 从地图系转到 robot_base_frame_id
     elevation_sampling:
-      enable: false
+      enable: true
       publish_rate: 10.0
       topic: elevation_sampled_cloud
-      stride_x: 2
-      stride_y: 2
-      use_fused_map: true
+      use_fused_map: false
       layer_name: elevation
+      invalid_height_fill_mode: body  # none last_valid body
+      invalid_height_body_offset: -0.2
+      publish_index_markers: true
+      marker_topic: elevation_sampled_cloud_indices
+      marker_scale: 0.06
+      lateral_samples: 16
+      longitudinal_samples: 26
+      lateral_length: 1.5
+      longitudinal_length: 2.5
