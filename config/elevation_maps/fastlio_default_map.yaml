@@ -14,8 +14,8 @@ elevation_mapping:
     # 栅格分辨率（m/格）
     resolution: 0.05
     # 地图窗口尺寸（m）
-    length_in_x: 8.0
-    length_in_y: 8.0
+    length_in_x: 5.0
+    length_in_y: 5.0
     # 初始地图中心位置（map frame）
     position_x: 0.0
     position_y: 0.0

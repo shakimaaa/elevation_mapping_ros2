@@ -19,14 +19,14 @@ elevation_mapping:
   ros__parameters:
     # ----------------------------- Core frames / topics -----------------------------
     map_frame_id: camera_init
-    robot_base_frame_id: body
-    track_point_frame_id: body
+    robot_base_frame_id: _body
+    track_point_frame_id: _body
     track_point_x: 0.0
     track_point_y: 0.0
     track_point_z: 0.0
 
     # 单路兼容模式（不使用 input_sources_file 时生效）
-    point_cloud_topic: /cloud_registered
+    point_cloud_topic: /cloud_lidar2_filtered
 
     # FAST-LIO 通常输出 Odometry；这里先置空，禁用运动方差预测（仅用 TF）
     # 若你有 PoseWithCovarianceStamped，填入该话题即可启用预测

@@ -31,6 +31,7 @@ def generate_launch_description():
     map_params = LaunchConfiguration("map_params")
     sensor_params = LaunchConfiguration("sensor_params")
     post_params = LaunchConfiguration("post_params")
+    use_sim_time = LaunchConfiguration("use_sim_time")
 
     return LaunchDescription(
         [
@@ -54,12 +55,23 @@ def generate_launch_description():
                 default_value=default_post,
                 description="Postprocessing parameters YAML",
             ),
+            DeclareLaunchArgument(
+                "use_sim_time",
+                default_value="true",
+                description="Use simulation clock if true",
+            ),
             Node(
                 package="elevation_mapping_ros2",
                 executable="elevation_mapping_ros2_node",
                 name="elevation_mapping",
                 output="screen",
-                parameters=[robot_params, map_params, sensor_params, post_params],
+                parameters=[
+                    robot_params,
+                    map_params,
+                    sensor_params,
+                    post_params,
+                    {"use_sim_time": use_sim_time},
+                ],
             ),
         ]
     )

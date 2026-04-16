@@ -42,10 +42,11 @@ namespace elevation_mapping {
 ElevationMapping::ElevationMapping(rclcpp::Node::SharedPtr node)
     : node_(std::move(node)),
       tf_buffer_(std::make_shared<tf2_ros::Buffer>(node_->get_clock())),
-      tf_listener_(std::make_shared<tf2_ros::TransformListener>(*tf_buffer_, node_, false)),
+      tf_listener_(std::make_shared<tf2_ros::TransformListener>(*tf_buffer_, node_, true)),
       inputSources_(node_, tf_buffer_),
       map_(node_),
       robot_motion_map_updater_(node_) {
+  tf_buffer_->setUsingDedicatedThread(true);
   last_point_cloud_update_time_ = node_->now();
 #ifndef NDEBUG
   RCLCPP_WARN(node_->get_logger(), "Debug build: use Release for better performance.");
