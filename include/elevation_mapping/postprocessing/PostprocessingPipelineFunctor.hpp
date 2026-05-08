@@ -8,6 +8,7 @@
  */
 #pragma once
 
+#include <opencv2/core/mat.hpp>
 #include <filters/filter_chain.hpp>
 #include <grid_map_core/GridMap.hpp>
 #include <grid_map_msgs/msg/grid_map.hpp>
@@ -31,6 +32,10 @@ class PostprocessingPipelineFunctor {
 
  private:
   void readParameters();
+  GridMap runBuiltinFilterHierarchy(const GridMap& inputMap) const;
+  cv::Mat gridMapLayerToCvMat(const GridMap& map, const std::string& layerName) const;
+  cv::Mat inpaintWithBorderMin(const cv::Mat& raw, int maxIterations) const;
+  static int ensureOddKernel(int kernelSize);
 
   rclcpp::Node::SharedPtr node_;
   rclcpp::Publisher<grid_map_msgs::msg::GridMap>::SharedPtr publisher_;
@@ -39,6 +44,19 @@ class PostprocessingPipelineFunctor {
   struct Parameters {
     std::string outputTopic_;
     std::string filterChainParametersName_;
+    std::string sourceLayerName_;
+    std::string smoothLayerName1_;
+    std::string smoothLayerName2_;
+    bool enableBuiltinFilterHierarchy_{true};
+    bool replaceSourceWithDenoised_{true};
+    int inpaintIterations_{4};
+    int outlierMedianKernelSize_{3};
+    int outlierMedianPasses_{2};
+    int aggressiveMedianKernelSize_{7};
+    int dilationKernelSize_{5};
+    double deltaHeightMaskThreshold_{0.01};
+    double hs1Sigma_{0.08};
+    double hs2Sigma_{0.24};
   };
   ThreadSafeDataWrapper<Parameters> parameters_;
 

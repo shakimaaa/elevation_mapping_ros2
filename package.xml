@@ -33,6 +33,7 @@
   <depend>kindr</depend>
   <depend>yaml_cpp_vendor</depend>
   <depend>boost</depend>
+  <depend>opencv</depend>
   <depend>filters</depend>
   <depend>pluginlib</depend>
   <exec_depend>launch</exec_depend>

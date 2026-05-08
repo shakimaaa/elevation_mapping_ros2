@@ -67,6 +67,8 @@ class ElevationMap {
   void setRawGridMap(const grid_map::GridMap& map);
   grid_map::GridMap& getFusedGridMap();
   void setFusedGridMap(const grid_map::GridMap& map);
+  grid_map::GridMap& getPostprocessedGridMap();
+  void setPostprocessedGridMap(const grid_map::GridMap& map);
 
   rclcpp::Time getTimeOfLastUpdate();
   rclcpp::Time getTimeOfLastFusion();
@@ -75,6 +77,7 @@ class ElevationMap {
 
   boost::recursive_mutex& getFusedDataMutex();
   boost::recursive_mutex& getRawDataMutex();
+  boost::recursive_mutex& getPostprocessedDataMutex();
 
   void setFrameId(const std::string& frameId);
   const std::string& getFrameId();
@@ -101,6 +104,7 @@ class ElevationMap {
   rclcpp::Node::SharedPtr node_;
   grid_map::GridMap rawMap_;
   grid_map::GridMap fusedMap_;
+  grid_map::GridMap postprocessedMap_;
   grid_map::GridMap visibilityCleanupMap_;
   grid_map::GridMap underlyingMap_;
   PostprocessorPool postprocessorPool_;
@@ -112,6 +116,7 @@ class ElevationMap {
 
   boost::recursive_mutex fusedMapMutex_;
   boost::recursive_mutex rawMapMutex_;
+  boost::recursive_mutex postprocessedMapMutex_;
   boost::recursive_mutex visibilityCleanupMapMutex_;
 
   rclcpp::Subscription<grid_map_msgs::msg::GridMap>::SharedPtr underlyingMapSubscriber_;

@@ -13,6 +13,7 @@
 #include <boost/asio.hpp>
 #include <boost/thread.hpp>
 #include <deque>
+#include <functional>
 #include <memory>
 #include <mutex>
 #include <thread>
@@ -33,7 +34,8 @@ class PostprocessorPool {
    * @param poolSize 工作线程数量（通常与 CPU 核数或期望并行度一致）。
    * @param node 用于创建 functor 内发布者与读取参数。
    */
-  PostprocessorPool(std::size_t poolSize, rclcpp::Node::SharedPtr node);
+  PostprocessorPool(std::size_t poolSize, rclcpp::Node::SharedPtr node,
+                    std::function<void(const GridMap&)> onPostprocessedMap = {});
 
   /** 停止 io_service、join 各线程。 */
   ~PostprocessorPool();
@@ -51,6 +53,7 @@ class PostprocessorPool {
   void wrapTask(size_t serviceIndex);
 
   std::vector<std::unique_ptr<PostprocessingWorker>> workers_;
+  std::function<void(const GridMap&)> onPostprocessedMap_;
 
   boost::mutex availableServicesMutex_;
   std::deque<size_t> availableServices_;

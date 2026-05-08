@@ -39,9 +39,10 @@ ElevationMapRobotFrameSampler::ElevationMapRobotFrameSampler(rclcpp::Node::Share
   callback_group_ = node_->create_callback_group(rclcpp::CallbackGroupType::MutuallyExclusive);
   timer_ = node_->create_wall_timer(period, [this]() { timerCallback(); }, callback_group_);
   RCLCPP_INFO(node_->get_logger(),
-              "ElevationMapRobotFrameSampler: enabled, topic=%s rate=%.2f Hz samples=(lat:%d,long:%d) window=(%.2f,%.2f) fused=%s layer=%s",
+              "ElevationMapRobotFrameSampler: enabled, topic=%s rate=%.2f Hz samples=(lat:%d,long:%d) window=(%.2f,%.2f) fused=%s postprocessed=%s layer=%s",
               params_.topic_.c_str(), rate, params_.lateral_samples_, params_.longitudinal_samples_, params_.lateral_length_,
-              params_.longitudinal_length_, params_.use_fused_map_ ? "true" : "false", params_.layer_name_.c_str());
+              params_.longitudinal_length_, params_.use_fused_map_ ? "true" : "false",
+              params_.use_postprocessed_map_ ? "true" : "false", params_.layer_name_.c_str());
 }
 
 void ElevationMapRobotFrameSampler::readParameters() {
@@ -49,7 +50,13 @@ void ElevationMapRobotFrameSampler::readParameters() {
   params_.publish_rate_hz_ = declareOrGetParameter(node_.get(), "elevation_sampling.publish_rate", 2.0);
   params_.topic_ = declareOrGetParameter(node_.get(), "elevation_sampling.topic", std::string("elevation_sampled_cloud"));
   params_.use_fused_map_ = declareOrGetParameter(node_.get(), "elevation_sampling.use_fused_map", true);
+  params_.use_postprocessed_map_ = declareOrGetParameter(node_.get(), "elevation_sampling.use_postprocessed_map", false);
   params_.layer_name_ = declareOrGetParameter(node_.get(), "elevation_sampling.layer_name", std::string("elevation"));
+  if (params_.use_fused_map_ && params_.use_postprocessed_map_) {
+    params_.use_postprocessed_map_ = false;
+    RCLCPP_WARN(node_->get_logger(),
+                "ElevationMapRobotFrameSampler: both use_fused_map and use_postprocessed_map are true; fallback to fused map.");
+  }
   params_.robot_base_frame_id_ = declareOrGetParameter(node_.get(), "robot_base_frame_id", std::string("robot"));
   params_.invalid_height_fill_mode_ =
       declareOrGetParameter(node_.get(), "elevation_sampling.invalid_height_fill_mode", std::string("none"));
@@ -131,16 +138,26 @@ void ElevationMapRobotFrameSampler::timerCallback() {
   float last_valid_height = 0.0f;
 
   {
-    boost::recursive_mutex* mutex = params_.use_fused_map_ ? &elevation_map_.getFusedDataMutex() : &elevation_map_.getRawDataMutex();
+    boost::recursive_mutex* mutex = nullptr;
+    grid_map::GridMap* gm = nullptr;
+    if (params_.use_fused_map_) {
+      mutex = &elevation_map_.getFusedDataMutex();
+      gm = &elevation_map_.getFusedGridMap();
+    } else if (params_.use_postprocessed_map_) {
+      mutex = &elevation_map_.getPostprocessedDataMutex();
+      gm = &elevation_map_.getPostprocessedGridMap();
+    } else {
+      mutex = &elevation_map_.getRawDataMutex();
+      gm = &elevation_map_.getRawGridMap();
+    }
     boost::lock_guard<boost::recursive_mutex> lock(*mutex);
-    grid_map::GridMap& gm = params_.use_fused_map_ ? elevation_map_.getFusedGridMap() : elevation_map_.getRawGridMap();
 
-    if (!gm.exists(params_.layer_name_)) {
+    if (!gm->exists(params_.layer_name_)) {
       RCLCPP_WARN_THROTTLE(node_->get_logger(), *node_->get_clock(), 5000, "ElevationMapRobotFrameSampler: layer '%s' missing",
                            params_.layer_name_.c_str());
       return;
     }
-    if (gm.getSize()(0) <= 0 || gm.getSize()(1) <= 0) {
+    if (gm->getSize()(0) <= 0 || gm->getSize()(1) <= 0) {
       sensor_msgs::msg::PointCloud2 empty_cloud;
       empty_cloud.header.stamp = node_->now();
       empty_cloud.header.frame_id = params_.robot_base_frame_id_;
@@ -183,20 +200,20 @@ void ElevationMapRobotFrameSampler::timerCallback() {
           }
           return false;
         };
-        if (!gm.isInside(sample_position)) {
+        if (!gm->isInside(sample_position)) {
           append_filled_point();
           continue;
         }
         grid_map::Index index;
-        if (!gm.getIndex(sample_position, index)) {
+        if (!gm->getIndex(sample_position, index)) {
           append_filled_point();
           continue;
         }
-        if (!gm.isValid(index)) {
+        if (!gm->isValid(index)) {
           append_filled_point();
           continue;
         }
-        const float h = gm.at(params_.layer_name_, index);
+        const float h = gm->at(params_.layer_name_, index);
         if (!std::isfinite(h)) {
           append_filled_point();
           continue;

@@ -30,6 +30,7 @@ find_package(kindr REQUIRED)
 find_package(yaml_cpp_vendor REQUIRED)
 find_package(Boost REQUIRED COMPONENTS system thread)
 find_package(Eigen3 REQUIRED)
+find_package(OpenCV REQUIRED COMPONENTS core imgproc)
 find_package(filters REQUIRED)
 find_package(pluginlib REQUIRED)
 
@@ -59,6 +60,7 @@ target_include_directories(${PROJECT_NAME}_core PUBLIC
   $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>
   $<INSTALL_INTERFACE:include>
   ${PCL_INCLUDE_DIRS}
+  ${OpenCV_INCLUDE_DIRS}
 )
 
 # find_package(kindr REQUIRED) 必须在 ament_target_dependencies(... kindr ...) 之前，
@@ -87,6 +89,7 @@ ament_target_dependencies(${PROJECT_NAME}_core
 
 target_link_libraries(${PROJECT_NAME}_core
   ${PCL_LIBRARIES}
+  ${OpenCV_LIBRARIES}
   Boost::thread
   Eigen3::Eigen
 )

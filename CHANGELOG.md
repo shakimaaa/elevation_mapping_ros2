@@ -6,6 +6,25 @@
 
 All notable changes to this project will be documented in this file.
 
+## [v0.0.3] - 2026.5.8
+### Added
+- Added a built-in elevation postprocessing hierarchy (inpaint -> repeated median denoise -> `hs1` light Gaussian -> `hs2` virtual-floor branch) with ROS parameters under `postprocessor_*`.
+- Added two postprocessed output layers by default: `elevation_hs1` and `elevation_hs2`.
+- Added sign-separated obstacle masks for the virtual-floor branch with configurable threshold `postprocessor_delta_height_mask_threshold` (`delta > +tau` for stepping stones, `delta < -tau` for gaps).
+- Added postprocessed map caching in `ElevationMap` and callback wiring in `PostprocessorPool` so downstream modules can consume postprocessed layers directly.
+- Added sampler parameter `elevation_sampling.use_postprocessed_map` to allow `ElevationMapRobotFrameSampler` to read from the cached postprocessed map.
+
+### Fixed
+- Fixed OpenCV runtime failures on systems where `cv::medianBlur` does not support `CV_32F` input by introducing a float32-compatible median filter path.
+- Fixed stepping-stone/gap handling semantics by applying dilation only to positive obstacle masks, preventing gap regions from being unintentionally max-filled.
+- Fixed sampled cloud layer access for `elevation_hs2` by enabling direct sampling from postprocessed maps (instead of raw/fused-only sources).
+
+### Changed
+- Changed built-in postprocessing fallback behavior: if external filter-chain configuration is unavailable, processing now falls back to the built-in hierarchy instead of forwarding raw map only.
+- Changed robot configuration defaults for postprocessed sampling workflows by supporting `use_postprocessed_map: true` with `layer_name: elevation_hs2`.
+
+---
+
 ## [v0.0.2] - 2026.4.16
 ### Added
 - Added local rectangular elevation sampling parameters (`lateral_samples`, `longitudinal_samples`, `lateral_length`, `longitudinal_length`) for robot-centered sampled clouds.

@@ -1,16 +1,16 @@
 elevation_mapping:
   ros__parameters:
     # ----------------------------- Frames -----------------------------
-    # 地图坐标系（建议与 FAST-LIO 世界系保持一致）
+    # 地图坐标系（建议与 LIO 世界系保持一致）
     map_frame_id: camera_init
-    # 机器人基座坐标系（建议与 FAST-LIO body/imu frame 一致）
+    # 机器人基座坐标系（建议与 LIO body/imu frame 一致）
     robot_base_frame_id: _body
     # 地图随动参考点所在坐标系
     track_point_frame_id: _body
     # 参考点在 track_point_frame_id 中的坐标（通常为机体原点）
     track_point_x: 0.0
     track_point_y: 0.0
-    track_point_z: 0.0
+    track_point_z: -0.17
 
     # ----------------------------- Topics -----------------------------
     # 单路点云输入话题（不使用 input_sources_file 时生效）
@@ -32,9 +32,10 @@ elevation_mapping:
       publish_rate: 10.0
       topic: elevation_sampled_cloud
       use_fused_map: false
-      layer_name: elevation
+      use_postprocessed_map: true
+      layer_name: elevation_hs2
       invalid_height_fill_mode: body  # none last_valid body
-      invalid_height_body_offset: -0.2
+      invalid_height_body_offset: -0.17
       publish_index_markers: true
       marker_topic: elevation_sampled_cloud_indices
       marker_scale: 0.06

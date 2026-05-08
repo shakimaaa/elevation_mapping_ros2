@@ -7,6 +7,28 @@ elevation_mapping:
     postprocessor_pipeline_name: postprocessor_pipeline
     # 后处理后 raw elevation map 发布话题
     output_topic: elevation_map_raw
+    # 启用内建滤波层级（inpaint + median 去离群 + hs1/hs2）
+    postprocessor_enable_builtin_filter_hierarchy: true
+    # 内建链使用的输入层（通常为 elevation）
+    postprocessor_source_layer: elevation
+    # 去噪后是否覆盖 source_layer
+    postprocessor_replace_source_with_denoised: true
+    # 两个附加平滑层名称（对应论文 hs1 / hs2）
+    postprocessor_hs1_layer: elevation_hs1
+    postprocessor_hs2_layer: elevation_hs2
+    # Step1: 空洞填充（邻域最小值传播）的最大迭代次数
+    postprocessor_inpaint_iterations: 4
+    # Step2: 重复中值滤波去离群
+    postprocessor_outlier_median_kernel: 3
+    postprocessor_outlier_median_passes: 2
+    # Step4: “virtual floor” 预处理
+    postprocessor_aggressive_median_kernel: 7
+    postprocessor_dilation_kernel: 3
+    # Δh 正负掩码阈值（米）：delta>+tau 视为 stepping stone；delta<-tau 视为 gap
+    postprocessor_delta_height_mask_threshold: 0.01
+    # Step3/5: hs1 与 hs2 的高斯标准差（米）
+    postprocessor_hs1_sigma: 0.08
+    postprocessor_hs2_sigma: 0.24
 
     # ----------------------------- Example filter chain -----------------------------
     # 下面是示例模板。若未提供实际链配置，程序会告警并直接发布未后处理的 raw map。

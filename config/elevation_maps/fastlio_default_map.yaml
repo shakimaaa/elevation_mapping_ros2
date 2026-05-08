@@ -38,7 +38,7 @@ elevation_mapping:
     # 可选底图输入话题（留空=禁用）
     underlying_map_topic: ""
     # 是否启用可见性清理
-    enable_visibility_cleanup: true
+    enable_visibility_cleanup: false
     # 是否在点云回调内连续清理（true 时更实时但更耗算力）
     enable_continuous_cleanup: false
     # masked_replace 服务使用的掩码层名

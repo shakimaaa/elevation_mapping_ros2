@@ -10,7 +10,9 @@
 
 namespace elevation_mapping {
 
-PostprocessorPool::PostprocessorPool(std::size_t poolSize, rclcpp::Node::SharedPtr node) {
+PostprocessorPool::PostprocessorPool(std::size_t poolSize, rclcpp::Node::SharedPtr node,
+                                     std::function<void(const GridMap&)> onPostprocessedMap)
+    : onPostprocessedMap_(std::move(onPostprocessedMap)) {
   for (std::size_t i = 0; i < poolSize; ++i) {
     workers_.emplace_back(std::make_unique<PostprocessingWorker>(node));
     availableServices_.push_back(i);  // 初始时所有 worker 空闲
@@ -53,6 +55,9 @@ bool PostprocessorPool::runTask(const GridMap& gridMap) {
 void PostprocessorPool::wrapTask(size_t serviceIndex) {
   try {
     GridMap postprocessedMap = workers_.at(serviceIndex)->processBuffer();
+    if (onPostprocessedMap_) {
+      onPostprocessedMap_(postprocessedMap);
+    }
     workers_.at(serviceIndex)->publish(postprocessedMap);
   }
   catch (const std::exception& exception) {  // 单任务失败不影响池内其它线程

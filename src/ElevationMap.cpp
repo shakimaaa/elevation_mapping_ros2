@@ -38,7 +38,8 @@ ElevationMap::ElevationMap(rclcpp::Node::SharedPtr node)
       rawMap_({"elevation", "variance", "horizontal_variance_x", "horizontal_variance_y", "horizontal_variance_xy", "color", "time",
                "dynamic_time", "lowest_scan_point", "sensor_x_at_lowest_scan", "sensor_y_at_lowest_scan", "sensor_z_at_lowest_scan"}),
       fusedMap_({"elevation", "upper_bound", "lower_bound", "color"}),
-      postprocessorPool_(declareOrGetParameter(node_.get(), "postprocessor_num_threads", 1), node_),
+      postprocessorPool_(declareOrGetParameter(node_.get(), "postprocessor_num_threads", 1), node_,
+                         [this](const grid_map::GridMap& map) { this->setPostprocessedGridMap(map); }),
       hasUnderlyingMap_(false) {
   rawMap_.setBasicLayers({"elevation", "variance"});
   fusedMap_.setBasicLayers({"elevation", "upper_bound", "lower_bound"});
@@ -425,6 +426,11 @@ bool ElevationMap::clear() {
     fusedMap_.clearAll();
     fusedMap_.resetTimestamp();
   }
+  {
+    boost::recursive_mutex::scoped_lock scopedLockForPostprocessedData(postprocessedMapMutex_);
+    postprocessedMap_.clearAll();
+    postprocessedMap_.resetTimestamp();
+  }
   return true;
 }
 
@@ -607,6 +613,15 @@ void ElevationMap::setFusedGridMap(const grid_map::GridMap& map) {
   fusedMap_ = map;
 }
 
+grid_map::GridMap& ElevationMap::getPostprocessedGridMap() {
+  return postprocessedMap_;
+}
+
+void ElevationMap::setPostprocessedGridMap(const grid_map::GridMap& map) {
+  boost::recursive_mutex::scoped_lock scopedLockForPostprocessedData(postprocessedMapMutex_);
+  postprocessedMap_ = map;
+}
+
 rclcpp::Time ElevationMap::getTimeOfLastUpdate() {
   return rclcpp::Time(static_cast<int64_t>(rawMap_.getTimestamp()), node_->get_clock()->get_clock_type());
 }
@@ -637,6 +652,10 @@ boost::recursive_mutex& ElevationMap::getRawDataMutex() {
   return rawMapMutex_;
 }
 
+boost::recursive_mutex& ElevationMap::getPostprocessedDataMutex() {
+  return postprocessedMapMutex_;
+}
+
 bool ElevationMap::clean() {
   const Parameters parameters{parameters_.getData()};
   boost::recursive_mutex::scoped_lock scopedLockForRawData(rawMapMutex_);
@@ -660,11 +679,13 @@ void ElevationMap::resetFusedData() {
 void ElevationMap::setFrameId(const std::string& frameId) {
   rawMap_.setFrameId(frameId);
   fusedMap_.setFrameId(frameId);
+  postprocessedMap_.setFrameId(frameId);
 }
 
 void ElevationMap::setTimestamp(rclcpp::Time timestamp) {
   rawMap_.setTimestamp(timestamp.nanoseconds());
   fusedMap_.setTimestamp(timestamp.nanoseconds());
+  postprocessedMap_.setTimestamp(timestamp.nanoseconds());
 }
 
 const std::string& ElevationMap::getFrameId() {

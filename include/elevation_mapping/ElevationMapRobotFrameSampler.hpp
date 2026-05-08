@@ -42,6 +42,7 @@ class ElevationMapRobotFrameSampler {
     double publish_rate_hz_{2.0};
     std::string topic_{"elevation_sampled_cloud"};
     bool use_fused_map_{true};
+    bool use_postprocessed_map_{false};
     std::string layer_name_{"elevation"};
     std::string robot_base_frame_id_{"robot"};
     std::string invalid_height_fill_mode_{"none"};
