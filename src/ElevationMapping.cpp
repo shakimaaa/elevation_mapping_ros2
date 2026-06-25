@@ -152,6 +152,7 @@ bool ElevationMapping::readParameters(bool reload) {
 
   parameters.initializeElevationMap_ = declareOrGetParameter(node_.get(), "initialize_elevation_map", false);
   parameters.initializationMethod_ = declareOrGetParameter(node_.get(), "initialization_method", 0);
+  parameters.initializeElevationMapFull_ = declareOrGetParameter(node_.get(), "initialize_elevation_map_full", false);
   parameters.lengthInXInitSubmap_ = declareOrGetParameter(node_.get(), "length_in_x_init_submap", 1.2);
   parameters.lengthInYInitSubmap_ = declareOrGetParameter(node_.get(), "length_in_y_init_submap", 1.8);
   parameters.initSubmapHeightOffset_ = declareOrGetParameter(node_.get(), "init_submap_height_offset", 0.0);
@@ -270,7 +271,9 @@ bool ElevationMapping::initialize() {
   RCLCPP_INFO(node_->get_logger(), "Initializing...");
   rclcpp::sleep_for(std::chrono::seconds(1));
   resetMapUpdateTimer();
-  initializeElevationMap();
+  if (initializeElevationMap()) {
+    map_.postprocessAndPublishRawElevationMap(true);
+  }
   return true;
 }
 
@@ -543,10 +546,14 @@ bool ElevationMapping::initializeElevationMap() {
     auto tf_msg = tf_buffer_->lookupTransform(parameters.mapFrameId_, parameters.targetFrameInitSubmap_, tf2::TimePointZero,
                                               tf2::durationFromSec(5.0));
     const grid_map::Position positionRobot(tf_msg.transform.translation.x, tf_msg.transform.translation.y);
+    const float initHeight = static_cast<float>(tf_msg.transform.translation.z + parameters.initSubmapHeightOffset_);
+    const float initVariance = static_cast<float>(parameters.initSubmapVariance_);
     map_.move(positionRobot);
-    map_.setRawSubmapHeight(positionRobot, static_cast<float>(tf_msg.transform.translation.z + parameters.initSubmapHeightOffset_),
-                            static_cast<float>(parameters.initSubmapVariance_), parameters.lengthInXInitSubmap_,
-                            parameters.lengthInYInitSubmap_);
+    if (parameters.initializeElevationMapFull_) {
+      map_.setRawMapHeight(initHeight, initVariance);
+    } else {
+      map_.setRawSubmapHeight(positionRobot, initHeight, initVariance, parameters.lengthInXInitSubmap_, parameters.lengthInYInitSubmap_);
+    }
     return true;
   } catch (const tf2::TransformException& ex) {
     RCLCPP_WARN(node_->get_logger(), "Elevation init skipped: %s", ex.what());
@@ -558,7 +565,9 @@ bool ElevationMapping::initializeElevationMap() {
 void ElevationMapping::clearMapServiceCallback(const std::shared_ptr<std_srvs::srv::Empty::Request> /*request*/,
                                                std::shared_ptr<std_srvs::srv::Empty::Response> /*response*/) {
   map_.clear();
-  initializeElevationMap();
+  if (initializeElevationMap()) {
+    map_.postprocessAndPublishRawElevationMap(true);
+  }
 }
 
 /** 按 mask 图层将请求 GridMap 各层拷贝到当前 raw 图重叠区域。 */

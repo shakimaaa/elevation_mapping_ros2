@@ -10,7 +10,7 @@ elevation_mapping:
     # 参考点在 track_point_frame_id 中的坐标（通常为机体原点）
     track_point_x: 0.0
     track_point_y: 0.0
-    track_point_z: -0.17
+    track_point_z: 0.0
 
     # ----------------------------- Topics -----------------------------
     # 单路点云输入话题（不使用 input_sources_file 时生效）

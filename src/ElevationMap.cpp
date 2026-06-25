@@ -551,8 +551,8 @@ void ElevationMap::move(const Eigen::Vector2d& position) {
   }
 }
 
-bool ElevationMap::postprocessAndPublishRawElevationMap() {
-  if (!hasRawMapSubscribers()) {
+bool ElevationMap::postprocessAndPublishRawElevationMap(bool force) {
+  if (!force && !hasRawMapSubscribers()) {
     return false;
   }
   boost::recursive_mutex::scoped_lock scopedLock(rawMapMutex_);
@@ -730,9 +730,24 @@ void ElevationMap::underlyingMapCallback(const grid_map_msgs::msg::GridMap::Shar
   rawMap_.addDataFrom(underlyingMap_, false, false, true);
 }
 
+void ElevationMap::setRawMapHeight(float mapHeight, float variance) {
+  const Parameters parameters{parameters_.getData()};
+  boost::recursive_mutex::scoped_lock scopedLockForRawData(rawMapMutex_);
+
+  rawMap_["elevation"].setConstant(mapHeight);
+  rawMap_["variance"].setConstant(variance);
+  rawMap_["horizontal_variance_x"].setConstant(parameters.minHorizontalVariance_);
+  rawMap_["horizontal_variance_y"].setConstant(parameters.minHorizontalVariance_);
+  rawMap_["horizontal_variance_xy"].setZero();
+
+  clean();
+  rawMap_.setTimestamp(node_->now().nanoseconds());
+}
+
 void ElevationMap::setRawSubmapHeight(const grid_map::Position& initPosition, float mapHeight, float variance, double lengthInXSubmap,
                                       double lengthInYSubmap) {
   // Set a submap area (lengthInYSubmap, lengthInXSubmap) with a constant height (mapHeight) and variance.
+  const Parameters parameters{parameters_.getData()};
   boost::recursive_mutex::scoped_lock scopedLockForRawData(rawMapMutex_);
 
   // Calculate submap iterator start index.
@@ -749,11 +764,20 @@ void ElevationMap::setRawSubmapHeight(const grid_map::Position& initPosition, fl
   // Iterate through submap and fill height values.
   grid_map::Matrix& elevationData = rawMap_["elevation"];
   grid_map::Matrix& varianceData = rawMap_["variance"];
+  grid_map::Matrix& horizontalVarianceXData = rawMap_["horizontal_variance_x"];
+  grid_map::Matrix& horizontalVarianceYData = rawMap_["horizontal_variance_y"];
+  grid_map::Matrix& horizontalVarianceXYData = rawMap_["horizontal_variance_xy"];
   for (grid_map::SubmapIterator iterator(rawMap_, submapTopLeftIndex, submapBufferSize); !iterator.isPastEnd(); ++iterator) {
     const grid_map::Index index(*iterator);
     elevationData(index(0), index(1)) = mapHeight;
     varianceData(index(0), index(1)) = variance;
+    horizontalVarianceXData(index(0), index(1)) = parameters.minHorizontalVariance_;
+    horizontalVarianceYData(index(0), index(1)) = parameters.minHorizontalVariance_;
+    horizontalVarianceXYData(index(0), index(1)) = 0.0;
   }
+
+  clean();
+  rawMap_.setTimestamp(node_->now().nanoseconds());
 }
 
 float ElevationMap::cumulativeDistributionFunction(float x, float mean, float standardDeviation) {

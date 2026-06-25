@@ -181,6 +181,7 @@ class ElevationMapping {
     std::string maskedReplaceServiceMaskLayerName_;
     bool initializeElevationMap_{false};
     int initializationMethod_{0};
+    bool initializeElevationMapFull_{false};
     double lengthInXInitSubmap_{1.2};
     double lengthInYInitSubmap_{1.8};
     std::string targetFrameInitSubmap_;

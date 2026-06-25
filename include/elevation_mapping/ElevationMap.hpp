@@ -58,8 +58,8 @@ class ElevationMap {
   /** @brief 在地图平面内平移网格窗口（机器人中心地图经典操作）。 */
   void move(const Eigen::Vector2d& position);
 
-  /** @brief 若有原始图订阅者，将当前 raw 图副本交给后处理线程池异步发布。 */
-  bool postprocessAndPublishRawElevationMap();
+  /** @brief 若有原始图订阅者，将当前 raw 图副本交给后处理线程池异步发布；force=true 时即使暂时无订阅者也发布以填充 transient_local 缓存。 */
+  bool postprocessAndPublishRawElevationMap(bool force = false);
   bool publishFusedElevationMap();
   bool publishVisibilityCleanupMap();
 
@@ -88,6 +88,9 @@ class ElevationMap {
 
   /** @brief 底层参考地图回调（如真值/多机），用于填充或校正原始层。 */
   void underlyingMapCallback(const grid_map_msgs::msg::GridMap::SharedPtr underlyingMap);
+
+  /** @brief 在整张原始图写入常值高度与方差（全图初始化用）。 */
+  void setRawMapHeight(float mapHeight, float variance);
 
   /** @brief 在指定矩形区域写入常值高度与方差（初始化用）。 */
   void setRawSubmapHeight(const grid_map::Position& initPosition, float mapHeight, float variance, double lengthInXSubmap,

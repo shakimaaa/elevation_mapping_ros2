@@ -82,6 +82,9 @@ elevation_mapping:
     # ----------------------------- Initialization -----------------------------
     initialize_elevation_map: false
     initialization_method: 0
+    # true 时将初始化平面填充到整个当前地图范围；false=仅填充初始化子图
+    initialize_elevation_map_full: false
+    # 子图尺寸仅在 initialize_elevation_map_full=false 时使用
     length_in_x_init_submap: 1.2
     length_in_y_init_submap: 1.8
     init_submap_height_offset: 0.0
