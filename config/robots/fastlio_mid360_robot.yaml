@@ -2,11 +2,11 @@ elevation_mapping:
   ros__parameters:
     # ----------------------------- Frames -----------------------------
     # 地图坐标系（建议与 LIO 世界系保持一致）
-    map_frame_id: camera_init
+    map_frame_id: odom
     # 机器人基座坐标系（建议与 LIO body/imu frame 一致）
-    robot_base_frame_id: _body
+    robot_base_frame_id: base
     # 地图随动参考点所在坐标系
-    track_point_frame_id: _body
+    track_point_frame_id: base
     # 参考点在 track_point_frame_id 中的坐标（通常为机体原点）
     track_point_x: 0.0
     track_point_y: 0.0
@@ -14,7 +14,7 @@ elevation_mapping:
 
     # ----------------------------- Topics -----------------------------
     # 单路点云输入话题（不使用 input_sources_file 时生效）
-    point_cloud_topic: /cloud_lidar2_filtered
+    point_cloud_topic: /e1r/points_base
     # 位姿协方差输入（PoseWithCovarianceStamped）
     # FAST-LIO 常见输出为 Odometry；若未桥接请保持为空，程序会关闭运动方差预测
     robot_pose_with_covariance_topic: ""
@@ -28,7 +28,7 @@ elevation_mapping:
     # ----------------------------- 高程栅格采样点云（机器人系） -----------------------------
     # 按 stride_x/y 个格子步长下采样；z 为图层高程，xy 经 TF 从地图系转到 robot_base_frame_id
     elevation_sampling:
-      enable: true
+      enable: false
       publish_rate: 10.0
       topic: elevation_sampled_cloud
       use_fused_map: false

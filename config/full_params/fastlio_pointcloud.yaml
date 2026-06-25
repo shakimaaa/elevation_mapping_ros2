@@ -108,7 +108,7 @@ elevation_mapping:
     # ----------------------------- Postprocessing -----------------------------
     postprocessor_num_threads: 1
     postprocessor_pipeline_name: postprocessor_pipeline
-    output_topic: elevation_map_raw
+    output_topic: /elevation_mapping/elevation_map_raw
 
     # ----------------------------- Optional multi-input mode -----------------------------
     # 若你改用 input_sources_file（推荐多路输入），可在此设置文件路径并忽略 point_cloud_topic：
