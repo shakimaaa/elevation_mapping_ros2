@@ -23,22 +23,22 @@ elevation_mapping:
     # ----------------------------- Elevation model -----------------------------
     # 高度方差上下限
     min_variance: 0.000009
-    max_variance: 0.0009
+    max_variance: 0.01
     # 马氏距离阈值（多高度/异常判定）
     mahalanobis_distance_threshold: 2.5
     # 多高度场景附加噪声
-    multi_height_noise: 0.000009
+    multi_height_noise: 0.00001
     # 水平方差上下限
     min_horizontal_variance: 0.000625
     max_horizontal_variance: 0.5
     # 同一扫描时间窗（s），影响多高度融合与清理
     scanning_duration: 1.0
     # 同一扫描内遇到更高点时的平滑系数（0=快速跟随）
-    increase_height_alpha: 0.0
+    increase_height_alpha: 0.
     # 可选底图输入话题（留空=禁用）
     underlying_map_topic: ""
     # 是否启用可见性清理
-    enable_visibility_cleanup: false
+    enable_visibility_cleanup: true
     # 是否在点云回调内连续清理（true 时更实时但更耗算力）
     enable_continuous_cleanup: false
     # masked_replace 服务使用的掩码层名

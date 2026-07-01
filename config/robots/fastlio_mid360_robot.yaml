@@ -4,9 +4,9 @@ elevation_mapping:
     # 地图坐标系（建议与 LIO 世界系保持一致）
     map_frame_id: odom
     # 机器人基座坐标系（建议与 LIO body/imu frame 一致）
-    robot_base_frame_id: base
+    robot_base_frame_id: _body
     # 地图随动参考点所在坐标系
-    track_point_frame_id: base
+    track_point_frame_id: _body
     # 参考点在 track_point_frame_id 中的坐标（通常为机体原点）
     track_point_x: 0.0
     track_point_y: 0.0
@@ -14,7 +14,7 @@ elevation_mapping:
 
     # ----------------------------- Topics -----------------------------
     # 单路点云输入话题（不使用 input_sources_file 时生效）
-    point_cloud_topic: /e1r/points_base
+    point_cloud_topic: /cloud_registered_body
     # 位姿协方差输入（PoseWithCovarianceStamped）
     # FAST-LIO 常见输出为 Odometry；若未桥接请保持为空，程序会关闭运动方差预测
     robot_pose_with_covariance_topic: ""

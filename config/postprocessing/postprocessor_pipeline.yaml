@@ -2,7 +2,7 @@ elevation_mapping:
   ros__parameters:
     # ----------------------------- Postprocessing worker/publisher -----------------------------
     # 后处理线程数（每帧 raw map 的滤波任务并行度）
-    postprocessor_num_threads: 1
+    postprocessor_num_threads: 2
     # filters 参数命名空间名称（需在同一参数树下定义该链）
     postprocessor_pipeline_name: postprocessor_pipeline
     # 后处理后 raw elevation map 发布话题
